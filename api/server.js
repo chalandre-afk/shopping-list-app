@@ -8,18 +8,10 @@ app.use(cors());
 app.use(express.json());
 
 // In-memory storage: this array is the source of truth
-let items = [
-  {
-    id: "1",
-    title: "Milk",
-    description: "2L low fat milk",
-    createdAt: new Date().toISOString(),
-    completed: false,
-  },
-];
+let items = [];
 
 // Simple id generator: a counter that goes up each time
-let nextId = 2;
+let nextId = 1;
 
 // GET /items - summary of all items (no description)
 app.get("/items", async (req, res) => {
