@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = "http://localhost:1701";
+import { createItem } from "../api/itemsApi";
 
 function CreatePage() {
   const [title, setTitle] = useState("");
@@ -18,12 +17,7 @@ function CreatePage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description }),
-      });
-      if (!response.ok) throw new Error("Failed to create item");
+      await createItem({ title, description });
       navigate("/list");
     } catch (err) {
       setError("Could not create the item. Is the backend running?");

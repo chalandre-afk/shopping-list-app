@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-const API_URL = "http://localhost:1701";
+import { getItems, updateItem, deleteItem, clearItems } from "../api/itemsApi";
 
 function ListPage() {
   const [items, setItems] = useState([]);
@@ -10,10 +9,7 @@ function ListPage() {
 
   async function loadItems() {
     try {
-      const response = await fetch(`${API_URL}/items`);
-      if (!response.ok) throw new Error("Failed to load items");
-      const data = await response.json();
-      setItems(data);
+      setItems(await getItems());
       setError("");
     } catch (err) {
       setError("Could not load the shopping list. Is the backend running?");
@@ -26,12 +22,7 @@ function ListPage() {
 
   async function handleToggle(item) {
     try {
-      const response = await fetch(`${API_URL}/items/${item.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !item.completed }),
-      });
-      if (!response.ok) throw new Error("Failed to update item");
+      await updateItem(item.id, { completed: !item.completed });
       await loadItems();
     } catch (err) {
       setError("Could not update the item.");
@@ -40,10 +31,7 @@ function ListPage() {
 
   async function handleDelete(id) {
     try {
-      const response = await fetch(`${API_URL}/items/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete item");
+      await deleteItem(id);
       await loadItems();
     } catch (err) {
       setError("Could not delete the item.");
@@ -51,9 +39,9 @@ function ListPage() {
   }
 
   async function handleClear() {
+    if (!window.confirm("Clear the whole list?")) return;
     try {
-      const response = await fetch(`${API_URL}/items`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to clear list");
+      await clearItems();
       await loadItems();
     } catch (err) {
       setError("Could not clear the list.");
@@ -62,7 +50,7 @@ function ListPage() {
 
   return (
     <div>
-      <h1>🛒 Shopping List</h1>
+      <h1>?? Shopping List</h1>
 
       <button onClick={() => navigate("/create")}>Add Item</button>
       <button onClick={handleClear}>Clear List</button>

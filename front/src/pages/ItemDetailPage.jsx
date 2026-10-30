@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const API_URL = "http://localhost:1701";
+import { getItem, updateItem, deleteItem } from "../api/itemsApi";
 
 function ItemDetailPage() {
   const { id } = useParams();
@@ -12,17 +11,14 @@ function ItemDetailPage() {
   useEffect(() => {
     async function loadItem() {
       try {
-        const response = await fetch(`${API_URL}/items/${id}`);
-        if (response.status === 404) {
-          setError("Item not found.");
-          return;
-        }
-        if (!response.ok) throw new Error("Failed to load item");
-        const data = await response.json();
-        setItem(data);
+        setItem(await getItem(id));
         setError("");
       } catch (err) {
-        setError("Could not load the item. Is the backend running?");
+        if (err.status === 404) {
+          setError("Item not found.");
+        } else {
+          setError("Could not load the item. Is the backend running?");
+        }
       }
     }
     loadItem();
@@ -30,14 +26,7 @@ function ItemDetailPage() {
 
   async function handleToggle() {
     try {
-      const response = await fetch(`${API_URL}/items/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !item.completed }),
-      });
-      if (!response.ok) throw new Error("Failed to update item");
-      const updated = await response.json();
-      setItem(updated);
+      setItem(await updateItem(id, { completed: !item.completed }));
     } catch (err) {
       setError("Could not update the item.");
     }
@@ -45,10 +34,7 @@ function ItemDetailPage() {
 
   async function handleDelete() {
     try {
-      const response = await fetch(`${API_URL}/items/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete item");
+      await deleteItem(id);
       navigate("/list");
     } catch (err) {
       setError("Could not delete the item.");
